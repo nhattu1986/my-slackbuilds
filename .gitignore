@@ -2,4 +2,7 @@
 *.xz
 *~
 *.gz
-
+*.tz
+*.asc
+*.lz
+*.sig

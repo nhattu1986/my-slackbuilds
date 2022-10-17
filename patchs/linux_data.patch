@@ -1,0 +1,34 @@
+diff --git a/src/main/getData.js b/src/main/getData.js
+index 4d6130d..63ff5d8 100644
+--- a/src/main/getData.js
++++ b/src/main/getData.js
+@@ -142,10 +142,13 @@ const readLog = async () => {
+   const text = i18n.log
+   try {
+     let userPath
++    let gamePath
++    let cacheText
+     if (!process.env.WINEPREFIX) {
+       userPath = app.getPath('home')
+     } else {
+       userPath = path.join(process.env.WINEPREFIX, 'drive_c/users', process.env.USER)
++      gamePath = path.join(process.env.WINEPREFIX, 'drive_c/Program Files/Genshin Impact/GenshinImpact_Data/')
+     }
+     const gameNames = await detectGameLocale(userPath)
+     if (!gameNames.length) {
+@@ -156,7 +159,14 @@ const readLog = async () => {
+       const logText = await fs.readFile(`${userPath}/AppData/LocalLow/miHoYo/${name}/output_log.txt`, 'utf8')
+       const gamePathMch = logText.match(/\w:\/.+(GenshinImpact_Data|YuanShen_Data)/)
+       if (gamePathMch) {
+-        const cacheText = await fs.readFile(path.join(gamePathMch[0], '/webCaches/Cache/Cache_Data/data_2'), 'utf8')
++        if (!process.env.WINEPREFIX)
++        {
++          cacheText = await fs.readFile(path.join(gamePathMch[0], '/webCaches/Cache/Cache_Data/data_2'), 'utf8')
++        }
++        else
++        {
++          cacheText = await fs.readFile(path.join(gamePath, '/webCaches/Cache/Cache_Data/data_2'), 'utf8')
++        }
+         const urlMch = cacheText.match(/https.+?game_biz=hk4e_\w+/g)
+         if (urlMch) {
+           return urlMch[urlMch.length - 1]

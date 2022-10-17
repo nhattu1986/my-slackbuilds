@@ -1,0 +1,102 @@
+#!/bin/sh -e
+#<your name> revision date yyyy/mm/dd
+#Set initial variables:	
+
+CWD=$(pwd)
+if [ "$TMP" = "" ]; then
+  TMP=/tmp
+fi
+
+# The version which appears in the application's filename
+VERSION=${VERSION:-1.91.7}
+KERNEL=${KERNEL:-$(uname -r)}
+PKGKERNEL=$(echo $KERNEL | tr - _)
+REPO_URL=https://github.com/cyring/CoreFreq.git
+
+# If the version conflicts with the Slackware package standard
+# The dash character ("-") is not allowed in the VERSION string
+# You can set the PKG_VERSION to something else than VERSION
+PKG_VERSION=$VERSION # the version which appears in the package name. 
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+ case "$( uname -m )" in
+   i?86) ARCH=i486 ;;
+   arm*) ARCH=arm ;;
+   # Unless $ARCH is already set, use uname -m for all other archs:
+      *) ARCH=$( uname -m ) ;;
+ esac
+fi
+
+# First digit is the build number, which specifies how many times it has been built.	
+# Second string is the short form of the authors name, typical three initials:w
+BUILD=${BUILD:-1}
+
+# The application's name
+APP=corefreq
+
+# The installation directory of the package (where its actual directory
+# structure will be created) 
+PKG=$TMP/package-$APP
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Delete the leftover directories if they exist (due to a previous build)
+# and (re)create the packaging directory
+rm -rf $PKG 
+mkdir -p $TMP $PKG
+rm -rf $TMP/$APP-$VERSION
+
+# Change to the TMP directory
+cd $TMP || exit 1
+ 
+# Extract the application source in TMP
+# Note: if your application comes as a tar.bz2, you need tar -jxvf
+#tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
+
+git clone --depth 1 --branch=${VERSION} ${REPO_URL} $APP-$VERSION
+
+# Change to the application source directory
+cd $APP-$VERSION || exit 1
+ 
+# Change ownership and permissions if necessary
+# This may not be needed in some source tarballs, but it never hurts
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+make KERNELDIR=/lib/modules/${KERNEL}/build || exit
+
+mkdir -p $PKG/etc/rc.d
+mkdir -p $PKG/usr/doc/$APP-$VERSION/
+mkdir -p $PKG/usr/bin/
+mkdir -p $PKG/lib/modules/$KERNEL/extra
+mkdir -p $PKG/usr/share/applications/
+
+install -m 0755 $CWD/rc.corefreq $PKG/etc/rc.d/rc.corefreq.new
+install -Dm 0755 corefreq-cli corefreqd -t $PKG/usr/bin/
+install -m 0644 corefreqk.ko $PKG/lib/modules/$KERNEL/extra/
+install -m 0644 $CWD/corefreq.desktop $PKG/usr/share/applications/
+cp -a \
+  LICENSE README.md CoreFreq.svg\
+  $PKG/usr/doc/$APP-$VERSION/
+cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$VERSION/$APP.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $TMP/$APP-${PKG_VERSION}_${PKGKERNEL}-$ARCH-$BUILD.tgz
+

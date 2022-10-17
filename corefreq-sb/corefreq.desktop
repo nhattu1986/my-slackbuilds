@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Corefreq-CLI
+GenericName=CPU Monitor
+Comment=Show CPU Status
+Icon=htop
+Exec=corefreq-cli
+Terminal=true
+Categories=System;Monitor;ConsoleOnly;
+Keywords=system;process;task

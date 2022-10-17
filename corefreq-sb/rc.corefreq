@@ -1,0 +1,109 @@
+#!/bin/sh
+
+NAME="corefreqd"
+DESC="corefreqd daemon"
+MODULE="corefreqk"
+
+PID=$(/sbin/pidof -o %PPID ${NAME})
+
+start() 
+{
+    # Check if already started
+    if [ -n "${PID}" ] ;then
+        echo "${DESC} is already running at pid: ${PID}"
+        return ${RETVAL}
+        exit
+    fi
+
+    # Load module
+    if [ -n "${MODULE}" ]; then
+        echo -n "Inserting ${MODULE} kernel module"
+        modprobe "${MODULE}" >/dev/null 2>&1
+        RETVAL=$?
+        if [ ${RETVAL} -eq 0 ]; then
+            echo -e "\t\t\t\t\t[  OK  ]\r"
+            sleep 1
+        else
+            echo -e "\t\t\t\t\t[FAILED]\r"
+            exit 1
+        fi
+    fi
+    
+
+    # Start daemon
+    /usr/bin/${NAME} -q &
+
+    return ${RETVAL}
+}
+
+stop() 
+{
+    # Stopping daemon
+    echo -n "Stopping ${DESC}"
+    if [ -n "${PID}" ] ;then
+        kill ${PID}
+        RETVAL=$?
+        if [ ${RETVAL} -eq 0 ]; then
+            echo -e "\t\t\t\t\t\t[  OK  ]\r"
+            else
+            echo -e "\t\t\t\t\t\t[FAILED]\r"
+        fi
+        sleep 2
+    else 
+        echo -e "\t\t\t\tWarning: ${DESC} isn't running"
+        RETVAL=0
+    fi
+
+    # Unload module
+    echo -n "Removing ${MODULE} kernel module"
+    LOADED=`lsmod | grep -o -e ^${MODULE} -`
+    if [ "${LOADED}" = "${MODULE}" ]; then
+        modprobe -r "${MODULE}" >/dev/null 2>&1
+        RETVAL=$?
+        if [ ${RETVAL} -eq 0 ]; then
+            echo -e "\t\t\t\t\t[  OK  ]\r"
+        else
+            echo -e "\t\t\t\t\t[FAILED]\r"
+        fi
+    else
+        echo -e "\t\t\tWarning: ${MODULE} isn't loaded"
+        RETVAL=0
+    fi
+    return ${RETVAL}
+}
+
+restart() {
+    stop
+    RETVAL=$?
+    if [ ${RETVAL} -eq 0 ]; then
+        PID=$(/sbin/pidof -o %PPID ${NAME})
+        start
+        RETVAL=$?
+        if [ ${RETVAL} -ne 0 ]; then
+            echo "Couldn't start ${DESC} retry in 3sec."
+            sleep 3
+            start
+            RETVAL=$?
+        fi
+    fi
+    return ${RETVAL}
+}
+
+
+# See how we were called.
+case "$1" in
+    "start")
+        start
+        ;;
+    "stop")
+        stop
+        ;;
+    "restart")
+        restart
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        ;;
+esac
+
+exit ${RETVAL}

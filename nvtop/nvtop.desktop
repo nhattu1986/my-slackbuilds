@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=nvtop
+GenericName=GPU Monitor
+Comment=Show GPU Status
+Icon=nvtop
+Exec=nvtop
+Terminal=true
+Categories=System;Monitor;ConsoleOnly;
+Keywords=system;process;task

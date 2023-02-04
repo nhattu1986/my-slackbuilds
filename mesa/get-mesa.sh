@@ -1,8 +1,8 @@
 # Pull a stable branch + patches
-BRANCH=7.10
+BRANCH=main
 
 rm -rf mesa
-git clone git://anongit.freedesktop.org/git/mesa/mesa
+git clone https://gitlab.freedesktop.org/mesa/mesa.git
 # package the source archive and clean up:
 ( cd mesa 
   git checkout $BRANCH || exit 1

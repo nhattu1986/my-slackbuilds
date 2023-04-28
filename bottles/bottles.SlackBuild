@@ -71,7 +71,9 @@ cd $TMP
 rm -rf $SRCNAM-$SRCVER
 tar xvf $CWD/$SRCNAM-$SRCVER.tar.?z
 pushd $SRCNAM-$SRCVER/src
+patch -p2 < $CWD/886e5f1c767abee2f9ad720b381617c8d90d7887.patch
 patch -p2 < $CWD/2c0fc55d582d1a9812e12b21f9faba521291054d.patch
+patch -p2 < $CWD/fb5dc46317953fc136eb276e492fd19c6f9b5e1c.patch
 popd
 
 cd $SRCNAM-$SRCVER

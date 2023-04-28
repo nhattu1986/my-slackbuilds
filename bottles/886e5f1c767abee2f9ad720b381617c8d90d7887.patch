@@ -1,0 +1,33 @@
+From 886e5f1c767abee2f9ad720b381617c8d90d7887 Mon Sep 17 00:00:00 2001
+From: Mirko Brombin <send@mirko.pm>
+Date: Sun, 25 Sep 2022 14:38:40 +0200
+Subject: [PATCH] backend: workaround #2062
+
+This is just a workaround. I'm not able to find what is causing this TypeError, I've tested with some different setups and I've never been able to reproduce it, so I'm just providing a workaround for not breaking the app. Thiw workaround removes the path from the list of found dlls as it seems to empty in some cases.
+---
+ bottles/backend/dlls/dll.py | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/bottles/backend/dlls/dll.py b/bottles/backend/dlls/dll.py
+index 0f8aa2a6d8..17479e584d 100644
+--- a/bottles/backend/dlls/dll.py
++++ b/bottles/backend/dlls/dll.py
+@@ -53,7 +53,17 @@ def check(self):
+             for dll in self.dlls[path]:
+                 _dll = os.path.join(_path, dll)
+                 if not os.path.exists(_dll):
+-                    del found[path][dll]
++                    try:
++                        del found[path][dll]
++                    except TypeError:
++                        # WORKAROUND: I'm not able to find what is causing this
++                        #          TypeError, I've tested with some different
++                        #          setups and I've never been able to reproduce
++                        #          it, so I'm just providing a workaround for
++                        #          not breaking the app. Thiw workaround removes
++                        #          the path from the list of found dlls as it
++                        #          seems to empty in some cases.
++                        del found[path]
+ 
+         if len(found) == 0:
+             return False

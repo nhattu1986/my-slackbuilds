@@ -1,0 +1,12 @@
+diff -ruN Bottles-2022.5.28-trento-3/src/utils/connection.py Bottles-2022.5.28-trento-3-n/src/utils/connection.py
+--- Bottles-2022.5.28-trento-3/src/utils/connection.py	2022-05-29 19:59:57.000000000 +0700
++++ Bottles-2022.5.28-trento-3-n/src/utils/connection.py	2023-04-28 11:16:19.778497665 +0700
+@@ -49,7 +49,7 @@
+ 
+         # check connection using gethostbyname, check if it hangs, then raise
+         try:
+-            urllib.request.urlopen('https://usebottles.com/', timeout=5)
++            urllib.request.urlopen('https://ping.usebottles.com', timeout=5)
+             if self.window is not None:
+                 self.window.toggle_btn_noconnection(False)
+ 

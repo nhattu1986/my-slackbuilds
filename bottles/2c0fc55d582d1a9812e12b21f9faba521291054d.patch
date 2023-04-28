@@ -1,0 +1,39 @@
+From 2c0fc55d582d1a9812e12b21f9faba521291054d Mon Sep 17 00:00:00 2001
+From: Francesco Masala <mail@francescomasala.me>
+Date: Wed, 30 Nov 2022 22:40:38 +0100
+Subject: [PATCH] backend: Added new bottles CDN service (#2340)
+
+This change introduces our new HTTPS endpoint to enable a
+geographic redirect to the geographically closest server
+to ensure a better and more stable experience.
+
+Should improve: https://github.com/bottlesdevs/Bottles/issues/2057
+---
+ bottles/backend/managers/repository.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/bottles/backend/managers/repository.py b/bottles/backend/managers/repository.py
+index 3b39995380..0ade5f89cf 100644
+--- a/bottles/backend/managers/repository.py
++++ b/bottles/backend/managers/repository.py
+@@ -33,17 +33,17 @@
+ class RepositoryManager:
+     __repositories = {
+         "components": {
+-            "url": "https://repo.usebottles.com/components/",
++            "url": "https://proxy.usebottles.com/repo/components/",
+             "index": "",
+             "cls": ComponentRepo
+         },
+         "dependencies": {
+-            "url": "https://repo.usebottles.com/dependencies/",
++            "url": "https://proxy.usebottles.com/repo/dependencies/",
+             "index": "",
+             "cls": DependencyRepo
+         },
+         "installers": {
+-            "url": "https://repo.usebottles.com/programs/",
++            "url": "https://proxy.usebottles.com/repo/programs/",
+             "index": "",
+             "cls": InstallerRepo
+         }

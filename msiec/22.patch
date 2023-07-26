@@ -1,0 +1,323 @@
+From 7bdec2ff7d0cb571d65a099f3e10aa488888f570 Mon Sep 17 00:00:00 2001
+From: teackot <k.qovekt@gmail.com>
+Date: Mon, 20 Feb 2023 02:06:15 +0300
+Subject: [PATCH 1/4] Add a configuration for MSI Alpha 15 B5EEK (#16)
+
+---
+ ec_memory_configuration.h |  2 +-
+ msi-ec.c                  | 80 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 81 insertions(+), 1 deletion(-)
+
+diff --git a/ec_memory_configuration.h b/ec_memory_configuration.h
+index a02e8f6..9ff48dd 100644
+--- a/ec_memory_configuration.h
++++ b/ec_memory_configuration.h
+@@ -5,7 +5,7 @@
+ 
+ #define MSI_EC_DRIVER_NAME "msi-ec"
+ 
+-#define MSI_EC_ADDR_UNKNOWN 0xff00 // unknown address
++#define MSI_EC_ADDR_UNKNOWN 0xff01 // unknown address
+ 
+ // Firmware info addresses are universal
+ #define MSI_EC_FW_VERSION_ADDRESS 0xa0
+diff --git a/msi-ec.c b/msi-ec.c
+index 8cf7960..d929df9 100644
+--- a/msi-ec.c
++++ b/msi-ec.c
+@@ -442,12 +442,92 @@ static struct msi_ec_conf CONF4 __initdata = {
+ 	},
+ };
+ 
++static const char *ALLOWED_FW_5[] __initdata = {
++	"158LEMS1.103",
++	"158LEMS1.105",
++	"158LEMS1.106",
++	NULL
++};
++
++static struct msi_ec_conf CONF5 __initdata = {
++	.allowed_fw = ALLOWED_FW_5,
++	.charge_control = {
++		.address      = 0xef,
++		.offset_start = 0x8a,
++		.offset_end   = 0x80,
++		.range_min    = 0x8a,
++		.range_max    = 0xe4,
++	},
++	.webcam = {
++		.address       = 0x2e,
++		.block_address = 0x2f,
++		.bit           = 1,
++	},
++	.fn_win_swap = { // todo: reverse
++		.address = 0xbf,
++		.bit     = 4,
++	},
++	.cooler_boost = {
++		.address = 0x98,
++		.bit     = 7,
++	},
++	.shift_mode = {
++		.address = 0xf2,
++		.modes = {
++			{ SM_ECO_NAME,     0xc2 },
++			{ SM_COMFORT_NAME, 0xc1 },
++			{ SM_TURBO_NAME,   0xc4 },
++			MSI_EC_MODE_NULL
++		},
++	},
++	.super_battery = { // unsupported?
++		.address   = MSI_EC_ADDR_UNKNOWN,
++		.mask      = 0x0f,
++	},
++	.fan_mode = {
++		.address = 0xf4,
++		.modes = {
++			{ FM_AUTO_NAME,     0x0d },
++			{ FM_SILENT_NAME,   0x1d },
++			{ FM_ADVANCED_NAME, 0x8d },
++			MSI_EC_MODE_NULL
++		},
++	},
++	.cpu = {
++		.rt_temp_address       = 0x68, // needs testing
++		.rt_fan_speed_address  = 0x71, // needs testing
++		.rt_fan_speed_base_min = 0x19,
++		.rt_fan_speed_base_max = 0x37,
++		.bs_fan_speed_address  = MSI_EC_ADDR_UNKNOWN, // not supported
++		.bs_fan_speed_base_min = 0x00,
++		.bs_fan_speed_base_max = 0x0f,
++	},
++	.gpu = {
++		.rt_temp_address      = MSI_EC_ADDR_UNKNOWN,
++		.rt_fan_speed_address = MSI_EC_ADDR_UNKNOWN,
++	},
++	.leds = {
++		.micmute_led_address = 0x2b,
++		.mute_led_address    = 0x2c,
++		.bit                 = 2,
++	},
++	.kbd_bl = {
++		.bl_mode_address  = MSI_EC_ADDR_UNKNOWN, // ?
++		.bl_modes         = { 0x00, 0x08 }, // ?
++		.max_mode         = 1, // ?
++		.bl_state_address = MSI_EC_ADDR_UNKNOWN, // 0xf3, not functional
++		.state_base_value = 0x80,
++		.max_state        = 3,
++	},
++};
++
+ static struct msi_ec_conf *CONFIGURATIONS[] __initdata = {
+ 	&CONF0,
+ 	&CONF1,
+ 	&CONF2,
+ 	&CONF3,
+ 	&CONF4,
++	&CONF5,
+ 	NULL
+ };
+ 
+
+From a8f5fe692f8a93f43653fa5d17eb8fba72923b7f Mon Sep 17 00:00:00 2001
+From: teackot <k.qovekt@gmail.com>
+Date: Mon, 20 Feb 2023 02:39:49 +0300
+Subject: [PATCH 2/4] Correct the GS66 config.
+
+---
+ msi-ec.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/msi-ec.c b/msi-ec.c
+index d929df9..1e160b9 100644
+--- a/msi-ec.c
++++ b/msi-ec.c
+@@ -400,7 +400,7 @@ static struct msi_ec_conf CONF4 __initdata = {
+ 			MSI_EC_MODE_NULL
+ 		},
+ 	},
+-	.super_battery = { // supported, but address is unknown
++	.super_battery = { // may be supported, but address is unknown
+ 		.address   = MSI_EC_ADDR_UNKNOWN,
+ 		.mask      = 0x0f,
+ 	},
+@@ -409,23 +409,22 @@ static struct msi_ec_conf CONF4 __initdata = {
+ 		.modes = {
+ 			{ FM_AUTO_NAME,     0x0d },
+ 			{ FM_SILENT_NAME,   0x1d },
+-			{ FM_BASIC_NAME,    0x4d },
+ 			{ FM_ADVANCED_NAME, 0x8d },
+ 			MSI_EC_MODE_NULL
+ 		},
+ 	},
+ 	.cpu = {
+-		.rt_temp_address       = 0x68,
+-		.rt_fan_speed_address  = MSI_EC_ADDR_UNKNOWN,
++		.rt_temp_address       = 0x68, // needs testing
++		.rt_fan_speed_address  = 0x71, // needs testing
+ 		.rt_fan_speed_base_min = 0x19,
+ 		.rt_fan_speed_base_max = 0x37,
+-		.bs_fan_speed_address  = 0x89,
++		.bs_fan_speed_address  = MSI_EC_ADDR_UNKNOWN,
+ 		.bs_fan_speed_base_min = 0x00,
+ 		.bs_fan_speed_base_max = 0x0f,
+ 	},
+ 	.gpu = {
+ 		.rt_temp_address      = 0x80,
+-		.rt_fan_speed_address = 0x89,
++		.rt_fan_speed_address = MSI_EC_ADDR_UNKNOWN,
+ 	},
+ 	.leds = {
+ 		.micmute_led_address = MSI_EC_ADDR_UNKNOWN,
+@@ -436,7 +435,7 @@ static struct msi_ec_conf CONF4 __initdata = {
+ 		.bl_mode_address  = MSI_EC_ADDR_UNKNOWN, // ?
+ 		.bl_modes         = { 0x00, 0x08 }, // ?
+ 		.max_mode         = 1, // ?
+-		.bl_state_address = 0xd3,
++		.bl_state_address = MSI_EC_ADDR_UNKNOWN, // 0xd3, not functional
+ 		.state_base_value = 0x80,
+ 		.max_state        = 3,
+ 	},
+
+From 582af0b91e06bacd60871ef30a022d632fe22184 Mon Sep 17 00:00:00 2001
+From: teackot <k.qovekt@gmail.com>
+Date: Mon, 20 Feb 2023 12:23:07 +0300
+Subject: [PATCH 3/4] Add compatible firmware versions to existing configs
+
+---
+ msi-ec.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/msi-ec.c b/msi-ec.c
+index 1e160b9..422195f 100644
+--- a/msi-ec.c
++++ b/msi-ec.c
+@@ -54,7 +54,9 @@ static const char *const FM_BASIC_NAME    = "basic";
+ static const char *const FM_ADVANCED_NAME = "advanced";
+ 
+ static const char *ALLOWED_FW_0[] __initdata = {
++	"14C1EMS1.012",
+ 	"14C1EMS1.101",
++	"14C1EMS1.102",
+ 	NULL
+ };
+ 
+@@ -131,7 +133,10 @@ static struct msi_ec_conf CONF0 __initdata = {
+ };
+ 
+ static const char *ALLOWED_FW_1[] __initdata = {
++	"17F2EMS1.103",
++	"17F2EMS1.104",
+ 	"17F2EMS1.106",
++	"17F2EMS1.107",
+ 	NULL
+ };
+ 
+
+From 337423da9c9c8402adf9133ae7c5d0da99b878f5 Mon Sep 17 00:00:00 2001
+From: teackot <k.qovekt@gmail.com>
+Date: Mon, 20 Feb 2023 17:47:16 +0300
+Subject: [PATCH 4/4] Add a config for GP66 Leopard 10UG and compatible models
+
+---
+ msi-ec.c | 80 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 80 insertions(+)
+
+diff --git a/msi-ec.c b/msi-ec.c
+index 422195f..05b4193 100644
+--- a/msi-ec.c
++++ b/msi-ec.c
+@@ -525,6 +525,85 @@ static struct msi_ec_conf CONF5 __initdata = {
+ 	},
+ };
+ 
++static const char *ALLOWED_FW_6[] __initdata = {
++	"1542EMS1.102",
++	"1542EMS1.104",
++	NULL
++};
++
++static struct msi_ec_conf CONF6 __initdata = {
++	.allowed_fw = ALLOWED_FW_6,
++	.charge_control = {
++		.address      = 0xef,
++		.offset_start = 0x8a,
++		.offset_end   = 0x80,
++		.range_min    = 0x8a,
++		.range_max    = 0xe4,
++	},
++	.webcam = {
++		.address       = 0x2e,
++		.block_address = MSI_EC_ADDR_UNKNOWN,
++		.bit           = 1,
++	},
++	.fn_win_swap = {
++		.address = MSI_EC_ADDR_UNKNOWN,
++		.bit     = 4,
++	},
++	.cooler_boost = {
++		.address = 0x98,
++		.bit     = 7,
++	},
++	.shift_mode = {
++		.address = 0xf2,
++		.modes = {
++			{ SM_ECO_NAME,     0xc2 },
++			{ SM_COMFORT_NAME, 0xc1 },
++			{ SM_SPORT_NAME,   0xc0 },
++			{ SM_TURBO_NAME,   0xc4 },
++			MSI_EC_MODE_NULL
++		},
++	},
++	.super_battery = {
++		.address   = 0xd5,
++		.mask      = 0x0f,
++	},
++	.fan_mode = {
++		.address = 0xf4,
++		.modes = {
++			{ FM_AUTO_NAME,     0x0d },
++			{ FM_SILENT_NAME,   0x1d },
++			{ FM_ADVANCED_NAME, 0x8d },
++			MSI_EC_MODE_NULL
++		},
++	},
++	.cpu = {
++		.rt_temp_address       = 0x68,
++		.rt_fan_speed_address  = 0xc9,
++		.rt_fan_speed_base_min = 0x19,
++		.rt_fan_speed_base_max = 0x37,
++		.bs_fan_speed_address  = MSI_EC_ADDR_UNKNOWN, // not supported
++		.bs_fan_speed_base_min = 0x00,
++		.bs_fan_speed_base_max = 0x0f,
++	},
++	.gpu = {
++		.rt_temp_address      = 0x80,
++		.rt_fan_speed_address = MSI_EC_ADDR_UNKNOWN,
++	},
++	.leds = {
++		.micmute_led_address = MSI_EC_ADDR_UNKNOWN,
++		.mute_led_address    = MSI_EC_ADDR_UNKNOWN,
++		.bit                 = 2,
++	},
++	.kbd_bl = {
++		.bl_mode_address  = MSI_EC_ADDR_UNKNOWN, // ?
++		.bl_modes         = { 0x00, 0x08 }, // ?
++		.max_mode         = 1, // ?
++		.bl_state_address = MSI_EC_ADDR_UNKNOWN, // 0xf3, not functional
++		.state_base_value = 0x80,
++		.max_state        = 3,
++	},
++};
++
+ static struct msi_ec_conf *CONFIGURATIONS[] __initdata = {
+ 	&CONF0,
+ 	&CONF1,
+@@ -532,6 +611,7 @@ static struct msi_ec_conf *CONFIGURATIONS[] __initdata = {
+ 	&CONF3,
+ 	&CONF4,
+ 	&CONF5,
++	&CONF6,
+ 	NULL
+ };
+ 

@@ -10,7 +10,7 @@ ccflags-y := -std=gnu11 -Wno-declaration-after-statement
 all: modules
 
 older-kernel-patch:
-	git apply older-kernel.patch
+	patch -p1 < older-kernel.patch
 
 modules:
 	@$(MAKE) -C $(KERNELDIR) M=$(PWD) modules

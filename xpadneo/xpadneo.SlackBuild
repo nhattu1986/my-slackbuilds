@@ -64,8 +64,8 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 # Kernel module related parameters:
-KVER=${KVER:-$(uname -r)}
-KSRC=${KSRC:-/lib/modules/${KVER}/build}
+KERNEL=${KERNEL:-$(uname -r)}
+KSRC=${KSRC:-/lib/modules/${KERNEL}/build}
 
 # Input URL: https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.9.5.tar.gz
 SOURCE="$SRCDIR/${PRGNAM}-v${VERSION}.tar.gz"
@@ -189,15 +189,15 @@ echo Building ...
 make modules 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
 #make DESTDIR=$PKG modules_install 2>&1 | tee $OUTPUT/install-${PRGNAM}.log
 
-mkdir -p $PKG/lib/modules/$KVER/kernel/drivers/hid/
-install -m 0644 src/hid-xpadneo.ko $PKG/lib/modules/$KVER/kernel/drivers/hid/
+mkdir -p $PKG/lib/modules/$KERNEL/kernel/drivers/hid/
+install -m 0644 src/hid-xpadneo.ko $PKG/lib/modules/$KERNEL/kernel/drivers/hid/
 
 # Add this to the doinst.sh:
 mkdir -p $PKG/install
 cat <<EOINS >> $PKG/install/doinst.sh
 # Only run depmod on matching running kernel
 # Slackware will run depmod anyway on reboot):
-MYMODVER=$KVER
+MYMODVER=$KERNEL
 MYKERNEL=\$(uname -r)
 if [ "\$MYKERNEL" = "\$MYMODVER" ]; then
   if [ -x sbin/depmod ]; then
@@ -208,8 +208,8 @@ fi
 # Determine the rc.modules to use:
 if [ -f etc/rc.d/rc.modules.local ]; then
   RCMODULES="etc/rc.d/rc.modules.local"
-elif [ -f etc/rc.d/rc.modules-$KVER ]; then
-  RCMODULES="etc/rc.d/rc.modules-$KVER"
+elif [ -f etc/rc.d/rc.modules-$KERNEL ]; then
+  RCMODULES="etc/rc.d/rc.modules-$KERNEL"
 else
   RCMODULES="etc/rc.d/rc.modules"
 fi
@@ -266,13 +266,13 @@ fi
 
 # Build the package:
 cd $PKG
-makepkg --linkadd y --chown n $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KVER | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz} 2>&1 | tee $OUTPUT/makepkg-${PRGNAM}.log
+makepkg --linkadd y --chown n $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KERNEL | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz} 2>&1 | tee $OUTPUT/makepkg-${PRGNAM}.log
 cd $OUTPUT
-md5sum ${PRGNAM}-${VERSION}_$(echo $KVER | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz} > ${PRGNAM}-${VERSION}_$(echo $KVER | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz}.md5
+md5sum ${PRGNAM}-${VERSION}_$(echo $KERNEL | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz} > ${PRGNAM}-${VERSION}_$(echo $KERNEL | tr - _)-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-tgz}.md5
 cd -
-cat $PKG/install/slack-desc | grep "^${PRGNAM}" > $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KVER | tr - _)-${ARCH}-${BUILD}${TAG}.txt
+cat $PKG/install/slack-desc | grep "^${PRGNAM}" > $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KERNEL | tr - _)-${ARCH}-${BUILD}${TAG}.txt
 if [ -f $PKG/install/slack-required ]; then
-  cat $PKG/install/slack-required > $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KVER | tr - _)-${ARCH}-${BUILD}${TAG}.dep
+  cat $PKG/install/slack-required > $OUTPUT/${PRGNAM}-${VERSION}_$(echo $KERNEL | tr - _)-${ARCH}-${BUILD}${TAG}.dep
 fi
 
 # Restore the original umask:

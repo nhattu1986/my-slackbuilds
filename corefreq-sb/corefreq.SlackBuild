@@ -8,7 +8,7 @@ if [ "$TMP" = "" ]; then
 fi
 
 # The version which appears in the application's filename
-VERSION=${VERSION:-1.96.5}
+VERSION=${VERSION:-1.97.0}
 KERNEL=${KERNEL:-$(uname -r)}
 PKGKERNEL=$(echo $KERNEL | tr - _)
 REPO_URL=https://github.com/cyring/CoreFreq.git
@@ -85,8 +85,8 @@ mkdir -p $PKG/lib/modules/$KERNEL/extra
 mkdir -p $PKG/usr/share/applications/
 
 install -m 0755 $CWD/rc.corefreq $PKG/etc/rc.d/rc.corefreq.new
-install -Dm 0755 corefreq-cli corefreqd -t $PKG/usr/bin/
-install -m 0644 corefreqk.ko $PKG/lib/modules/$KERNEL/extra/
+install -Dm 0755 build/corefreq-cli build/corefreqd -t $PKG/usr/bin/
+install -m 0644 build/corefreqk.ko $PKG/lib/modules/$KERNEL/extra/
 install -m 0644 $CWD/corefreq.desktop $PKG/usr/share/applications/
 cp -a \
   LICENSE README.md CoreFreq.svg\

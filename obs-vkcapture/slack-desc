@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+obs-vkcapture: obs-vkcapture (OBS Linux Vulkan/OpenGL game capture)
+obs-vkcapture:
+obs-vkcapture: OBS plugin for Vulkan/OpenGL game capture on Linux.
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture:
+obs-vkcapture: Home: https://github.com/nowrep/obs-vkcapture

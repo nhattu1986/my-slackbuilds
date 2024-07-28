@@ -1,0 +1,78 @@
+#!/bin/bash
+
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+cd $(dirname $0) ; CWD=$(pwd)
+
+PRGNAM=skypeforlinux
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+TAG=${TAG:-_snap}
+PKGTYPE=${PKGTYPE:-tlz}
+TMP=${TMP:-/tmp/snap}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+BUILD=${BUILD:-3}
+
+declare RESULT=($(/usr/bin/python3 ./snap-find.py skype))
+VERSION=${RESULT[0]}
+DLINK=${RESULT[1]}
+ID=${RESULT[2]}
+SNAP_VERSION=${RESULT[3]}
+
+if [ ! -z "${PRINT_PACKAGE_NAME}" ]; then
+  echo "$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+  exit 0
+fi
+
+
+if [ "$ARCH" != "x86_64" ]; then
+  echo "$ARCH is not supported."
+  exit 1
+fi
+
+set -e
+
+rm -rf $TMP $PKG
+mkdir -p $TMP $PKG $OUTPUT
+
+cd $TMP
+wget -c "$DLINK"
+
+unsquashfs "$ID"_"$SNAP_VERSION".snap
+
+mkdir -p $PKG/opt
+mkdir -p $PKG/usr/share/applications/
+mkdir -p $PKG/usr/share/icons/"$PRGNAM"
+
+mv  $TMP/squashfs-root/usr/share/skypeforlinux -t $PKG/opt/
+cp $TMP/squashfs-root/meta/gui/skypeforlinux.png  $PKG/usr/share/icons/"$PRGNAM"/
+cp $TMP/squashfs-root/meta/gui/skypeforlinux.desktop $PKG/usr/share/applications/
+sed -i -E 's/^Exec=.*/Exec=\/opt\/skypeforlinux\/skypeforlinux/; s/^Icon=.*/Icon=skypeforlinux/'  $PKG/usr/share/applications/skypeforlinux.desktop
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+mv squashfs-root/usr/share/doc/* $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l n -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE

@@ -8,7 +8,7 @@ if [ "$TMP" = "" ]; then
 fi
 
 # The version which appears in the application's filename
-VERSION=${VERSION:-1.97.0}
+VERSION=${VERSION:-1.98.3}
 KERNEL=${KERNEL:-$(uname -r)}
 PKGKERNEL=$(echo $KERNEL | tr - _)
 REPO_URL=https://github.com/cyring/CoreFreq.git

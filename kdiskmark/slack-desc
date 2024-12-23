@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+KDiskMark: KDiskMark (A simple open-source disk benchmark tool for Linux distros)
+KDiskMark:
+KDiskMark: KDiskMark is an HDD and SSD benchmark tool with a very friendly
+KDiskMark: graphical user interface. KDiskMark with its presets and powerful GUI
+KDiskMark: calls Flexible I/O Tester and handles the output to provide an easy
+KDiskMark: to view and interpret comprehensive benchmark result. The application
+KDiskMark: is written in C++ with Qt and doesn't have any KDE dependencies.
+KDiskMark:
+KDiskMark:
+KDiskMark:
+KDiskMark: Home: https://github.com/JonMagon/KDiskMark

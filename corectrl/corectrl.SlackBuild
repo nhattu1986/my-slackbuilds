@@ -42,7 +42,7 @@
 # -----------------------------------------------------------------------------
 
 PRGNAM=corectrl
-VERSION=${VERSION:-v1.3.1}
+VERSION=${VERSION:-v1.4.3}
 BUILD=${BUILD:-1}
 # 'make' can run jobs in parallel for added speed. The number should be higher
 # than the number of cores/virtual CPU's in your system:
@@ -193,6 +193,7 @@ cd build-${PRGNAM}
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DMAN_INSTALL_DIR=/usr/man \
     -DSYSCONF_INSTALL_DIR=/etc \
+    -DBUILD_TESTING=OFF \
     -DLIB_SUFFIX=${LIBDIRSUFFIX} \
     ..
   make $NUMJOBS 2>&1 | tee $OUTPUT/make-${PRGNAM}.log

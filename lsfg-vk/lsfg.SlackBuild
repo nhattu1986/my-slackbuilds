@@ -9,6 +9,7 @@ fi
 
 # The version which appears in the application's filename
 VERSION=${VERSION:-develop}
+APP_VERSION=$(echo "$VERSION" | sed -e 's/\//_/g')
 #KERNEL=${KERNEL:-$(uname -r)}
 #PKGKERNEL=$(echo $KERNEL | tr - _)
 REPO_URL=https://github.com/PancakeTAS/lsfg-vk.git
@@ -58,7 +59,7 @@ fi
 # and (re)create the packaging directory
 rm -rf $PKG 
 mkdir -p $TMP $PKG
-rm -rf $TMP/$APP-$VERSION
+rm -rf $TMP/$APP-$APP_VERSION
 
 # Change to the TMP directory
 cd $TMP || exit 1
@@ -67,10 +68,10 @@ cd $TMP || exit 1
 # Note: if your application comes as a tar.bz2, you need tar -jxvf
 #tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
 
-git clone  --recurse-submodules --depth 1 --branch=${VERSION} ${REPO_URL} $APP-$VERSION
+git clone  --recurse-submodules --depth 1 --branch=${VERSION} ${REPO_URL} $APP-$APP_VERSION
 
 # Change to the application source directory
-cd $APP-$VERSION || exit 1
+cd $APP-$APP_VERSION || exit 1
 #get the top commit as #PKG_VERSION
 PKG_VERSION=$(git log -n 1 --pretty=format:"%h")
 # Change ownership and permissions if necessary
@@ -92,10 +93,10 @@ echo Building GUI...
  cd ui
  cargo build --release
  cd $TMP || exit 1
- cd $APP-$VERSION || exit 1
+ cd $APP-$APP_VERSION || exit 1
  
 #mkdir -p $PKG/etc/rc.d
-mkdir -p $PKG/usr/doc/$APP-$VERSION/
+mkdir -p $PKG/usr/doc/$APP-$APP_VERSION/
 mkdir -p $PKG/usr/bin/
 mkdir -p $PKG/usr/lib64/
 mkdir -p $PKG/usr/share/vulkan/implicit_layer.d/
@@ -116,13 +117,13 @@ install -m 0644 ui/rsc/icon.png $PKG/usr/share/icons/hicolor/256x256/apps/gay.pa
 
 cp -a \
   LICENSE.md README.md\
-  $PKG/usr/doc/$APP-$VERSION/
-cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$VERSION/$APP.SlackBuild
+  $PKG/usr/doc/$APP-$APP_VERSION/
+cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$APP_VERSION/$APP.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $TMP/$APP-${VERSION}_${PKG_VERSION}-$ARCH-$BUILD.tgz
+/sbin/makepkg -l y -c n $TMP/$APP-${APP_VERSION}_${PKG_VERSION}-$ARCH-$BUILD.tgz
 

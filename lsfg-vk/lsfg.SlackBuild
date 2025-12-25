@@ -14,7 +14,7 @@ APP_VERSION=$(echo "$VERSION" | sed -e 's/\//_/g')
 #PKGKERNEL=$(echo $KERNEL | tr - _)
 REPO_URL=https://github.com/PancakeTAS/lsfg-vk.git
 NUMJOBS=${NUMJOBS:-" -j$(nproc) "}
-
+OUTPUT="$TMP"
 # If the version conflicts with the Slackware package standard
 # The dash character ("-") is not allowed in the VERSION string
 # You can set the PKG_VERSION to something else than VERSION
@@ -80,39 +80,38 @@ chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
 echo Building ...
-  cmake -B build-${APP} -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_CXX_COMPILER=clang++ \
-    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=On \
-    -DCMAKE_INSTALL_PREFIX=/usr
+        cmake -B build-${APP} -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLSFGVK_BUILD_VK_LAYER=ON \
+          -DLSFGVK_BUILD_UI=ON \
+          -DLSFGVK_BUILD_CLI=ON \
+          -DLSFGVK_INSTALL_XDG_FILES=ON \
+          -DLSFGVK_LAYER_LIBRARY_PATH="/usr/lib${LIBDIRSUFFIX}/liblsfg-vk-layer.so"
 
-  cmake --build build-${APP} 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
-#  cmake --install build-${APP} --prefix $PKG 2>&1 | tee $OUTPUT/install-${PRGNAM}.log
-echo Building GUI...
- cd ui
- cargo build --release
- cd $TMP || exit 1
- cd $APP-$APP_VERSION || exit 1
+  ninja -C build-${APP} 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
+  cmake --install build-${APP} --prefix $PKG/usr 2>&1 | tee $OUTPUT/install-${PRGNAM}.log
+# echo Building GUI...
+#  cd ui
+#  cargo build --release
+#  cd $TMP || exit 1
+#  cd $APP-$APP_VERSION || exit 1
  
-#mkdir -p $PKG/etc/rc.d
 mkdir -p $PKG/usr/doc/$APP-$APP_VERSION/
-mkdir -p $PKG/usr/bin/
-mkdir -p $PKG/usr/lib64/
-mkdir -p $PKG/usr/share/vulkan/implicit_layer.d/
-#mkdir -p $PKG/lib/modules/$KERNEL/extra
-mkdir -p $PKG/usr/share/applications/
-mkdir -p $PKG/usr/share/icons/hicolor/256x256/apps/
+# mkdir -p $PKG/usr/bin/
+# mkdir -p $PKG/usr/lib64/
+# mkdir -p $PKG/usr/share/vulkan/implicit_layer.d/
+# #mkdir -p $PKG/lib/modules/$KERNEL/extra
+# mkdir -p $PKG/usr/share/applications/
+# mkdir -p $PKG/usr/share/icons/hicolor/256x256/apps/
 
-#install -m 0755 $CWD/rc.corefreq $PKG/etc/rc.d/rc.corefreq.new
-#install -Dm 0755 build/corefreq-cli build/corefreqd -t $PKG/usr/bin/
-#install -m 0644 build/corefreqk.ko $PKG/lib/modules/$KERNEL/extra/
-#install -m 0644 $CWD/corefreq.desktop $PKG/usr/share/applications/
-install -m 0644 build-${APP}/liblsfg-vk.so $PKG/usr/lib64/
-install -m 0644 VkLayer_LS_frame_generation.json $PKG/usr/share/vulkan/implicit_layer.d/
-install -m 0755 ui/target/release/lsfg-vk-ui $PKG/usr/bin/
-install -m 0644 ui/rsc/gay.pancake.lsfg-vk-ui.desktop $PKG/usr/share/applications/
-install -m 0644 ui/rsc/icon.png $PKG/usr/share/icons/hicolor/256x256/apps/gay.pancake.lsfg-vk-ui.png
+# 
+# install -m 0644 build-${APP}/liblsfg-vk.so $PKG/usr/lib64/
+# install -m 0644 VkLayer_LS_frame_generation.json $PKG/usr/share/vulkan/implicit_layer.d/
+# install -m 0755 ui/target/release/lsfg-vk-ui $PKG/usr/bin/
+# install -m 0644 ui/rsc/gay.pancake.lsfg-vk-ui.desktop $PKG/usr/share/applications/
+# install -m 0644 ui/rsc/icon.png $PKG/usr/share/icons/hicolor/256x256/apps/gay.pancake.lsfg-vk-ui.png
 
 
 cp -a \

@@ -1,0 +1,58 @@
+diff --git a/src-full/CMakeLists.txt b/src-full/CMakeLists.txt
+index 9b8151e..aabf372 100644
+--- a/src-full/CMakeLists.txt
++++ b/src-full/CMakeLists.txt
+@@ -13,7 +13,7 @@ include(ECMUninstallTarget)
+ # 2. Tìm các gói phụ thuộc (Đã bỏ Gettext)
+ find_package(Fcitx5Core ${REQUIRED_FCITX_VERSION} REQUIRED)
+ find_package(Fcitx5Module REQUIRED COMPONENTS TestFrontend)
+-find_package(Pthread REQUIRED)
++find_package(Threads REQUIRED)
+ find_package(X11 REQUIRED)
+ include("${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake")
+ 
+@@ -27,6 +27,7 @@ add_definitions(-DFCITX_INSTALL_LOCALEDIR=\"\")
+ add_subdirectory(bamboo)
+ add_subdirectory(src)
+ add_subdirectory(data)
++add_subdirectory(extra)
+ 
+ # 4. Thay vì dùng fcitx5_translate_desktop_file (yêu cầu thư mục po)
+ # Ta chỉ copy file .in thành file .xml để cài đặt
+diff --git a/src-full/data/CMakeLists.txt b/src-full/data/CMakeLists.txt
+index f364eee..6a9aee6 100644
+--- a/src-full/data/CMakeLists.txt
++++ b/src-full/data/CMakeLists.txt
+@@ -2,4 +2,4 @@ install(DIRECTORY scalable DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor"
+         PATTERN .* EXCLUDE
+         PATTERN *~ EXCLUDE)
+ 
+-install(FILES vietnamese.cm.dict DESTINATION "${FCITX_INSTALL_PKGDATADIR}/bamboo")
++install(FILES vietnamese.cm.dict DESTINATION "${CMAKE_INSTALL_DATADIR}/fcitx5/bamboo")
+diff --git a/src-full/src/CMakeLists.txt b/src-full/src/CMakeLists.txt
+index b975bdb..50a8c45 100644
+--- a/src-full/src/CMakeLists.txt
++++ b/src-full/src/CMakeLists.txt
+@@ -9,7 +9,7 @@ add_library(vmk MODULE ${fcitx_vmk_sources})
+ set_target_properties(vmk PROPERTIES OUTPUT_NAME "vmk")
+ 
+ # 3. Liên kết với target 'bamboo'
+-target_link_libraries(vmk Fcitx5::Core Fcitx5::Config Bamboo::Core Pthread::Pthread X11::X11) 
++target_link_libraries(vmk Fcitx5::Core Fcitx5::Config Bamboo::Core Threads::Threads X11::X11) 
+ 
+ # 4. Include Directories cho target 'bamboo'
+ target_include_directories(vmk PRIVATE ${PROJECT_BINARY_DIR})
+@@ -18,8 +18,9 @@ target_include_directories(vmk PRIVATE ${PROJECT_BINARY_DIR})
+ install(TARGETS vmk DESTINATION "${CMAKE_INSTALL_LIBDIR}/fcitx5")
+ 
+ # ... (Các dòng cấu hình và cài đặt file addon giữ nguyên)
+-fcitx5_translate_desktop_file(vmk.conf.in vmk.conf) 
++configure_file(vmk.conf.in vmk.conf COPYONLY)
++#fcitx5_translate_desktop_file(vmk.conf.in vmk.conf PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po) 
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vmk.conf" DESTINATION "${CMAKE_INSTALL_DATADIR}/fcitx5/inputmethod")
+-configure_file(vmk-addon.conf.in.in vmk-addon.conf.in)
+-fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/vmk-addon.conf.in" vmk-addon.conf)
+-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vmk-addon.conf" RENAME vmk.conf DESTINATION "${FCITX_INSTALL_PKGDATADIR}/addon")
++configure_file(vmk-addon.conf.in.in vmk-addon.conf)
++#fcitx5_translate_desktop_file("${CMAKE_CURRENT_BINARY_DIR}/vmk-addon.conf.in" vmk-addon.conf PO_DIRECTORY "${CMAKE_SOURCE_DIR}/po)
++install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vmk-addon.conf" RENAME vmk.conf DESTINATION "${CMAKE_INSTALL_DATADIR}/fcitx5/addon")

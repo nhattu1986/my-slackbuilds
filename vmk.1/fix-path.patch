@@ -1,0 +1,28 @@
+diff --git a/Makefile b/Makefile
+index 3326ac0..a7e2323 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,15 +1,16 @@
+-PREFIX ?= /usr
+-BINDIR = $(PREFIX)/bin
+-LIBDIR = $(PREFIX)/lib
+-DATADIR = $(PREFIX)/share
++PREFIX ?= /
++LIBDIRSUFFIX ?= 64
++BINDIR = $(PREFIX)/usr/bin
++LIBDIR = $(PREFIX)/usr/lib${LIBDIRSUFFIX}
++DATADIR = $(PREFIX)/usr/share
+ FCITX5_DATADIR = $(DATADIR)/fcitx5
+ ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
+ METAINFODIR = $(DATADIR)/metainfo
+ LICENSEDIR = $(DATADIR)/licenses/fcitx5-vmk
+ SYSTEMDDIR = $(PREFIX)/lib/systemd/system
+-UDEVDIR = $(PREFIX)/lib/udev/rules.d
+-MODULESLOADDIR = $(PREFIX)/lib/modules-load.d
+-SYSUSERSDIR = $(PREFIX)/lib/sysusers.d
++UDEVDIR = $(PREFIX)/etc/udev/rules.d
++MODULESLOADDIR = $(PREFIX)/lib${LIBDIRSUFFIX}/modules-load.d
++SYSUSERSDIR = $(PREFIX)/usr/lib/sysusers.d
+ 
+ BUILD_DIR = fcitx5-vmk/build
+ SERVER_BINARY = fcitx5-vmk-server

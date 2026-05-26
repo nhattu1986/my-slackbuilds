@@ -42,7 +42,7 @@
 # -----------------------------------------------------------------------------
 
 PRGNAM=xpadneo
-VERSION=${VERSION:-0.9.7}
+VERSION=${VERSION:-0.10.2}
 BUILD=${BUILD:-1}
 # 'make' can run jobs in parallel for added speed. The number should be higher
 # than the number of cores/virtual CPU's in your system:

@@ -1,0 +1,88 @@
+#!/bin/sh
+
+NAME="lact"
+DESC="lact daemon"
+LOGPATH="/var/log/${NAME}.log"
+BINPATH="/usr/local/bin"
+
+PID=$(/sbin/pidof -o %PPID ${NAME})
+
+start()
+{
+    echo -n "Starting ${DESC}"
+    # Check if already started
+    if [ -n "${PID}" ] ;then
+        echo "${DESC} is already running at pid: ${PID}"
+        return ${RETVAL}
+        exit
+    fi
+
+    # Start daemon
+    ${BINPATH}/${NAME} daemon 2>&1 >> ${LOGPATH} &
+    RETVAL=$?
+    if [ ${RETVAL} -eq 0 ]; then
+        echo -e "\t\t\t\t\t[  OK  ]\r"
+        sleep 1
+    else
+        echo -e "\t\t\t\t\t[FAILED]\r"
+        exit 1
+    fi
+    return ${RETVAL}
+}
+
+stop()
+{
+    # Stopping daemon
+    echo -n "Stopping ${DESC}"
+    if [ -n "${PID}" ] ;then
+        kill ${PID}
+        RETVAL=$?
+        if [ ${RETVAL} -eq 0 ]; then
+            echo -e "\t\t\t\t\t\t[  OK  ]\r"
+            else
+            echo -e "\t\t\t\t\t\t[FAILED]\r"
+        fi
+        sleep 2
+    else
+        echo -e "\t\t\t\tWarning: ${DESC} isn't running"
+        RETVAL=0
+    fi
+
+    return ${RETVAL}
+}
+
+restart() {
+    stop
+    RETVAL=$?
+    if [ ${RETVAL} -eq 0 ]; then
+        PID=$(/sbin/pidof -o %PPID ${NAME})
+        start
+        RETVAL=$?
+        if [ ${RETVAL} -ne 0 ]; then
+            echo "Couldn't start ${DESC} retry in 3sec."
+            sleep 3
+            start
+            RETVAL=$?
+        fi
+    fi
+    return ${RETVAL}
+}
+
+
+# See how we were called.
+case "$1" in
+    "start")
+        start
+        ;;
+    "stop")
+        stop
+        ;;
+    "restart")
+        restart
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        ;;
+esac
+
+exit ${RETVAL}

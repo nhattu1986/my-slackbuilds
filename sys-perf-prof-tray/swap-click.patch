@@ -1,0 +1,22 @@
+diff --git a/Tray.cpp b/Tray.cpp
+index 102e87f..b68bc32 100644
+--- a/Tray.cpp
++++ b/Tray.cpp
+@@ -141,7 +141,7 @@ void Tray::trayActivated(ActivationReason reason)
+ {
+     switch (reason)
+     {
+-        case Trigger:
++        case MiddleClick:
+             if constexpr (g_canUseSudo)
+             {
+                 if (CPU::toggleBoost())
+@@ -160,7 +160,7 @@ void Tray::trayActivated(ActivationReason reason)
+                 }
+             }
+             break;
+-        case MiddleClick:
++        case Trigger:
+             LACT::open();
+             break;
+         default:

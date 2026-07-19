@@ -178,6 +178,9 @@ else
   tar -xvf ${SOURCE}
 fi
 cd ${PRGNAM}-${VERSION}
+
+patch -p1 < ${SRCDIR}/swap-click.patch
+
 chown -R root:root .
 chmod -R u+w,go+r-w,a+rX-st .
 

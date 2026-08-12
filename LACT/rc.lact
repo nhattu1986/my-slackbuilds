@@ -3,7 +3,7 @@
 NAME="lact"
 DESC="lact daemon"
 LOGPATH="/var/log/${NAME}.log"
-BINPATH="/usr/local/bin"
+BINPATH="/usr/bin"
 
 PID=$(/sbin/pidof -o %PPID ${NAME})
 

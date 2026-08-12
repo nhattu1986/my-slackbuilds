@@ -42,7 +42,7 @@
 # -----------------------------------------------------------------------------
 
 PRGNAM=LACT
-VERSION=${VERSION:-0.9.1}
+VERSION=${VERSION:-0.10.0}
 BUILD=${BUILD:-1}
 # 'make' can run jobs in parallel for added speed. The number should be higher
 # than the number of cores/virtual CPU's in your system:
@@ -111,7 +111,7 @@ case "$ARCH" in
 esac
 
 # Exit the script on errors:
-set -e
+
 trap 'echo "$0 FAILED at line ${LINENO}" | tee $OUTPUT/error-${PRGNAM}.log' ERR
 # Catch unitialized variables:
 set -u
@@ -180,7 +180,7 @@ fi
 cd ${PRGNAM}-${VERSION}
 chown -R root:root .
 chmod -R u+w,go+r-w,a+rX-st .
-
+set -e
 echo Building ...
 # LDFLAGS="$SLKLDFLAGS" \
 # CXXFLAGS="$SLKCFLAGS" \
@@ -199,8 +199,8 @@ echo Building ...
 #   --build=$TARGET \
 #   2>&1 | tee $OUTPUT/configure-${PRGNAM}.log
 
-make $NUMJOBS 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
-make DESTDIR=$PKG install 2>&1 | tee $OUTPUT/install-${PRGNAM}.log
+make PREFIX=/usr $NUMJOBS 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
+make PREFIX=/usr  DESTDIR=$PKG install 2>&1 | tee $OUTPUT/install-${PRGNAM}.log
 #add extra startup script
 mkdir -p $PKG/etc/rc.d
 install -m 0755 $SRCDIR/rc.lact $PKG/etc/rc.d/rc.lact.new
@@ -258,7 +258,6 @@ if [ -x usr/bin/update-mime-database ]; then
 fi
 
 EOINS
-
 # Add documentation:
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a $DOCS $PKG/usr/doc/$PRGNAM-$VERSION || true

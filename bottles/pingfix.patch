@@ -6,7 +6,7 @@ diff -ruN Bottles-2022.5.28-trento-3/src/utils/connection.py Bottles-2022.5.28-t
          # check connection using gethostbyname, check if it hangs, then raise
          try:
 -            urllib.request.urlopen('https://usebottles.com/', timeout=5)
-+            urllib.request.urlopen('https://ping.usebottles.com', timeout=5)
++            urllib.request.urlopen('https://proxy.usebottles.com/', timeout=5)
              if self.window is not None:
                  self.window.toggle_btn_noconnection(False)
  

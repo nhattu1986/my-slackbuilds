@@ -1,0 +1,74 @@
+diff -ur Bottles-2022.5.28-trento-3/src/backend/managers/repository.py Bottles-2022.5.28-trento-3-fix/src/backend/managers/repository.py
+--- Bottles-2022.5.28-trento-3/src/backend/managers/repository.py	2022-05-29 19:59:57.000000000 +0700
++++ Bottles-2022.5.28-trento-3-fix/src/backend/managers/repository.py	2026-09-02 10:21:13.610228111 +0700
+@@ -24,6 +24,7 @@
+ from bottles.backend.repos.component import ComponentRepo
+ from bottles.backend.repos.installer import InstallerRepo
+ from bottles.params import VERSION_NUM
++from bottles.params import VERSION
+ 
+ logging = Logger()
+ 
+@@ -86,11 +87,15 @@
+             __fallback = os.path.join(data["url"], "index.yml")
+ 
+             try:
+-                with urllib.request.urlopen(__index) as res:
++                request_index = urllib.request.Request(__index)
++                request_index.add_header('User-Agent', f"Bottles/{VERSION}")
++                with urllib.request.urlopen(request_index) as res:
+                     data["index"] = __index
+             except (urllib.error.HTTPError, urllib.error.URLError):
+                 try:
+-                    with urllib.request.urlopen(__fallback) as res:
++                    request_fallback = urllib.request.Request(__fallback)
++                    request_fallback.add_header('User-Agent', f"Bottles/{VERSION}")
++                    with urllib.request.urlopen(request_fallback) as res:
+                         data["index"] = __fallback
+                 except (urllib.error.HTTPError, urllib.error.URLError):
+                     logging.error(f"Could not get index for {repo} repository", )
+diff -ur Bottles-2022.5.28-trento-3/src/backend/repos/repo.py Bottles-2022.5.28-trento-3-fix/src/backend/repos/repo.py
+--- Bottles-2022.5.28-trento-3/src/backend/repos/repo.py	2022-05-29 19:59:57.000000000 +0700
++++ Bottles-2022.5.28-trento-3-fix/src/backend/repos/repo.py	2026-09-02 10:21:38.810869938 +0700
+@@ -20,7 +20,7 @@
+ from http.client import RemoteDisconnected
+ 
+ from bottles.backend.logger import Logger  # pyright: reportMissingImports=false
+-
++from bottles.params import VERSION
+ logging = Logger()
+ 
+ 
+@@ -36,7 +36,9 @@
+             return {}
+ 
+         try:
+-            with urllib.request.urlopen(index) as url:
++            request = urllib.request.Request(index)
++            request.add_header('User-Agent', f"Bottles/{VERSION}")
++            with urllib.request.urlopen(request) as url:
+                 index = yaml.safe_load(url.read())
+                 logging.info(f"Catalog {self.name} loaded")
+         except (urllib.error.HTTPError, urllib.error.URLError, yaml.YAMLError):
+diff -ur Bottles-2022.5.28-trento-3/src/utils/connection.py Bottles-2022.5.28-trento-3-fix/src/utils/connection.py
+--- Bottles-2022.5.28-trento-3/src/utils/connection.py	2026-09-02 09:59:09.484171784 +0700
++++ Bottles-2022.5.28-trento-3-fix/src/utils/connection.py	2026-09-02 10:10:26.132109584 +0700
+@@ -21,6 +21,7 @@
+ from gettext import gettext as _
+ 
+ from bottles.backend.logger import Logger  # pyright: reportMissingImports=false
++from bottles.params import VERSION
+ 
+ logging = Logger()
+ 
+@@ -49,7 +50,9 @@
+ 
+         # check connection using gethostbyname, check if it hangs, then raise
+         try:
+-            urllib.request.urlopen('https://proxy.usebottles.com/', timeout=5)
++            request = urllib.request.Request('https://proxy.usebottles.com/')
++            request.add_header('User-Agent', f"Bottles/{VERSION}")
++            urllib.request.urlopen(request, timeout=5)
+             if self.window is not None:
+                 self.window.toggle_btn_noconnection(False)
+ 

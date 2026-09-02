@@ -8,11 +8,11 @@ if [ "$TMP" = "" ]; then
 fi
 
 # The version which appears in the application's filename
-VERSION=${VERSION:-develop}
+VERSION=${VERSION:-master}
 APP_VERSION=$(echo "$VERSION" | sed -e 's/\//_/g')
 #KERNEL=${KERNEL:-$(uname -r)}
 #PKGKERNEL=$(echo $KERNEL | tr - _)
-REPO_URL=https://github.com/PancakeTAS/lsfg-vk.git
+REPO_URL=https://git.lsfg-vk.dev/lsfg-vk.git
 NUMJOBS=${NUMJOBS:-" -j$(nproc) "}
 OUTPUT="$TMP"
 # If the version conflicts with the Slackware package standard
@@ -115,7 +115,7 @@ mkdir -p $PKG/usr/doc/$APP-$APP_VERSION/
 
 
 cp -a \
-  LICENSE.md README.md\
+  LICENSE.txt \
   $PKG/usr/doc/$APP-$APP_VERSION/
 cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$APP_VERSION/$APP.SlackBuild
 
